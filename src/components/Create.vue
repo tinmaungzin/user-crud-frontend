@@ -1,7 +1,7 @@
 <template>
   <div id="login-box">
     <div class="left">
-      <h1>Sign up</h1>
+      <h1>Create New User</h1>
       <form @submit.prevent="handleSubmit">
         <input type="text" v-model="username" placeholder="Username" />
         <span class="color-red" v-if="errors.name">{{ errors.name[0] }}</span>
@@ -16,29 +16,25 @@
           v-model="password_confirm"
           placeholder="Retype password"
         />
-        <input type="submit" name="signup_submit" value="Sign me up" />
+        <input type="submit" name="signup_submit" value="Submit" />
       </form>
-
-      <p><router-link to="/login">Login</router-link></p>
     </div>
   </div>
 </template>
 <script>
-import axios from "axios";
-// import { useStore } from "vuex";
-
+import { mapActions, mapGetters } from "vuex";
 export default {
-  name: "RegisterComponent",
+  name: "CreateComponent",
   data() {
     return {
       username: "",
       email: "",
       password: "",
       password_confirm: "",
-      errors: {},
     };
   },
   methods: {
+    ...mapActions(["addUsers"]),
     async handleSubmit() {
       const data = {
         name: this.username,
@@ -46,20 +42,11 @@ export default {
         password: this.password,
         password_confirmation: this.password_confirm,
       };
-      const self = this;
-      axios
-        .post("register", data)
-        .then((response) => {
-          localStorage.setItem("token", response.data.user.token);
-          this.$router.push("/login");
-        })
-        .catch((error) => {
-          if (error.response) {
-            self.errors = error.response.data.message;
-          }
-        });
+      const msg = await this.addUsers(data);
+      if (msg == "success") this.$router.push("/users");
     },
   },
+  computed: mapGetters(["errors"]),
 };
 </script>
 

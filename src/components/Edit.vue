@@ -1,65 +1,44 @@
 <template>
   <div id="login-box">
     <div class="left">
-      <h1>Sign up</h1>
+      <h1>Edit User</h1>
       <form @submit.prevent="handleSubmit">
-        <input type="text" v-model="username" placeholder="Username" />
+        <input type="text" v-model="user.name" placeholder="Username" />
         <span class="color-red" v-if="errors.name">{{ errors.name[0] }}</span>
-        <input type="text" v-model="email" placeholder="E-mail" />
+        <input type="text" v-model="user.email" placeholder="E-mail" />
         <span class="color-red" v-if="errors.email">{{ errors.email[0] }}</span>
-        <input type="password" v-model="password" placeholder="Password" />
-        <span class="color-red" v-if="errors.password">{{
-          errors.password[0]
-        }}</span>
-        <input
-          type="password"
-          v-model="password_confirm"
-          placeholder="Retype password"
-        />
-        <input type="submit" name="signup_submit" value="Sign me up" />
-      </form>
 
-      <p><router-link to="/login">Login</router-link></p>
+        <input type="submit" name="signup_submit" value="Update" />
+      </form>
     </div>
   </div>
 </template>
 <script>
-import axios from "axios";
-// import { useStore } from "vuex";
-
+import { mapActions, mapGetters } from "vuex";
 export default {
-  name: "RegisterComponent",
+  name: "EditComponent",
   data() {
     return {
       username: "",
       email: "",
-      password: "",
-      password_confirm: "",
-      errors: {},
     };
   },
   methods: {
+    ...mapActions(["editUsers", "fetchUser"]),
     async handleSubmit() {
       const data = {
-        name: this.username,
-        email: this.email,
-        password: this.password,
-        password_confirmation: this.password_confirm,
+        name: this.user.name,
+        email: this.user.email,
+        id: this.user.id,
       };
-      const self = this;
-      axios
-        .post("register", data)
-        .then((response) => {
-          localStorage.setItem("token", response.data.user.token);
-          this.$router.push("/login");
-        })
-        .catch((error) => {
-          if (error.response) {
-            self.errors = error.response.data.message;
-          }
-        });
+      const msg = await this.editUsers(data);
+      if (msg == "success") this.$router.push("/users");
     },
   },
+  created() {
+    this.fetchUser(this.$route.params.id);
+  },
+  computed: mapGetters(["errors", "user"]),
 };
 </script>
 
@@ -88,7 +67,7 @@ body {
   position: relative;
   margin: 5% auto;
   width: 300px;
-  height: 430px;
+  height: 350px;
   background: #fff;
   border-radius: 2px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);

@@ -2,16 +2,63 @@
   <div id="login-box">
     <div class="left">
       <h1>Login</h1>
-      <input type="text" name="email" placeholder="E-mail" />
-      <input type="password" name="password" placeholder="Password" />
-      <input type="submit" name="signup_submit" value="Log me in" />
+      <form @submit.prevent="handleSubmit">
+        <input type="text" v-model="email" placeholder="E-mail" />
+        <span class="color-red" v-if="errors.email">{{ errors.email[0] }}</span>
+
+        <input
+          type="password"
+          v-model="password"
+          name="password"
+          placeholder="Password"
+        />
+        <span class="color-red" v-if="errors.password">{{
+          errors.password[0]
+        }}</span>
+        <span class="color-red" v-if="errors">{{ errors }}</span>
+
+        <input type="submit" name="signup_submit" value="Log me in" />
+      </form>
+
       <p><router-link to="/register">Register</router-link></p>
     </div>
   </div>
 </template>
 <script>
+import axios from "axios";
 export default {
   name: "LoginComponent",
+  data() {
+    return {
+      email: "",
+      password: "",
+      errors: "",
+    };
+  },
+  methods: {
+    async handleSubmit() {
+      const data = {
+        email: this.email,
+        password: this.password,
+      };
+
+      const self = this;
+      axios
+        .post("login", data)
+        .then((response) => {
+          if (response) {
+            localStorage.setItem("token", response.data.user.token);
+            localStorage.setItem("user", JSON.stringify(response.data.user));
+            this.$router.push("/users");
+          }
+        })
+        .catch((error) => {
+          if (error.response) {
+            self.errors = error.response.data.message;
+          }
+        });
+    },
+  },
 };
 </script>
 <style scoped>
@@ -29,7 +76,10 @@ body {
   font-family: "Roboto", sans-serif;
   font-weight: 300;
 }
-
+.color-red {
+  color: red;
+  font-size: 12px;
+}
 #login-box {
   position: relative;
   margin: 5% auto;
